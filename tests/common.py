@@ -9,6 +9,8 @@ from pathlib import Path
 
 from plumbum import local, RETCODE, BG
 
+from prettyprinter import cpprint as pp
+
 #------------------------------------------------------------------------------
 
 @pytest.fixture()
@@ -76,12 +78,18 @@ class LogTool_TestCase ( unittest.TestCase ):
         message = "a b c"
         if command == 'log':
             tmp_file_obj = tempfile.TemporaryFile(dir = self.tmp_dir)
+            print(f"tmp file obj    = {str(tmp_file_obj)}")
+            pp(dir(tmp_file_obj))
             out_file = tmp_file_obj.name
+            print(f"tmp file name   = {out_file}")
+            # WEIRD:  on alpine, out_file is an integer ?
+            out_file = str(tmp_file_obj)
+            print(f"tmp file name   = {out_file}")
             raw_file = out_file if raw else out_file + '.raw' 
             args = [ out_file, program, message ]
             if raw :
                 args.insert(0, '--raw')
-        else :
+        elif command == 'logts':
             if raw :
                 raise ValueError(f"raw=True is not applicable when command ='{command}'") 
             # yes, a bit contrived to keep as much in common as feasible
@@ -89,6 +97,8 @@ class LogTool_TestCase ( unittest.TestCase ):
             raw_file = self.tmp_dir / 'utmost.dat'
             out_file = raw_file if raw else txt_file
             args = [ '-b', str(self.tmp_dir), program, message ]
+        else:
+            raise ValueError(f"Unrecognized command name '{command}' -- please resolve.") 
 
         if self.record :
             with (self.commonDir / 'command' ).open('w') as f :

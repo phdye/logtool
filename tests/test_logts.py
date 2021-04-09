@@ -16,7 +16,8 @@ class Test_Case ( LogTool_TestCase ) :
     def xtest_ts_text_default ( self ) :
         self.log_common ( 'logts', raw = False )
 
-    def test_ts_raw ( self ) :
+    # fails, '--raw' only applicable to 'log'
+    def SKIP_test_ts_raw ( self ) :
         self.log_common ( 'logts', raw = True )
 
     # Verify symlinks

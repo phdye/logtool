@@ -10,10 +10,22 @@ if [ -x ~/.local/bin/logts ] ; then
     # 't' left open to allow for arguments
     alias inst='( clear && logts -b log/install invoke install && echo "install path = $( which-module ${module} )" )'
 else
-    alias b='( clear && invoke build )'
-    alias t='( clear && invoke test )'
-    # 't' left open to allow for arguments
-    alias inst='( clear && invoke install && echo "install path = $( which-module ${module} )" )'
+    FIXED=log/fixed
+    mkdir -p ${FIXED}
+    function _fixed() {
+	    n="$1" ; shift
+	    clear
+        ( set -x ; invoke ${n} "$@" 2>&1 ) | tee ${FIXED}/$n
+    }
+    alias b=' _fixed build '
+    alias t=' _fixed test '
+    #
+    function _install() {
+	n="install" ; shift
+	clear && script -c "invoke $n $@" ${FIXED}/$n
+        # echo "install path = $( which-module ${module} )"
+    }
+    alias inst='_install'
 fi
 
 alias re=' c && b && t '

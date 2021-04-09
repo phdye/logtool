@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from setuptools import setup, find_packages
 # from setuptools.command.develop import develop
 from setuptools.command.install import install
@@ -6,13 +7,26 @@ from setuptools.command.install import install
 import re
 
 package_name = 'logtool'
-with open(f"{package_name}/__init__.py", 'rb') as f:
-    _version = re.search('^__version__\s*=\s*"(.*)"', f.read(), re.M ).group(1)
+init = f"{package_name}/__init__.py"
+with open(init, 'r') as f:
+    # _version = re.search('^__version__\s*=\s*"(.*)"', f.read(), re.M ).group(1)
+    # contents = f.read()
+    # print(contents, file=sys.stderr)
+    # results = re.search('^__version__\s*=\s*"(.*)"', contents, re.M )
+    # print(results, file=sys.stderr)
+    # _version = results.group(1)
+    contents = f.readlines()
+    prefix = '__version__='
+    __version__ = None
+    for line in contents:
+        line = line.strip().replace(' ','')
+        if line.startswith(prefix):
+            __version__ = line[len(prefix)+1:-1]
+    if not __version__:
+        raise ValueError(f"setup.py:  can't get version from '{init}'")
 
 with open("README.rst", 'rb') as f:
     _long_description = f.read().decode("utf-8")
-
-from logtool.version import __version__
 
 class InstallCommandWrapper(install):
     """Installer command wrapper.  Allows for pre-install and post-install actions."""
@@ -54,11 +68,11 @@ setup(
     packages=find_packages(exclude=[ 'tests', 't', 'src', 's', 'aaa', 'log', 'snapshot' ]),
     url='https://github.com/philip-h-dye/logtool',
     requires=['plumbum', 'dateparser', 'docopt'],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
+    # setup_requires=["pytest", "pytest-runner"],
+    # tests_require=["pytest"], # DEPRECATED
     cmdclass={
         # 'develop': PostDevelopCommand,
-        'install': InstallCommand,
+        'install': InstallCommandWrapper,
     },
     entry_points='''
         [console_scripts]
