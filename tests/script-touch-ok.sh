@@ -1,0 +1,34 @@
+#!/bin/bash
+
+PYTHONPATH=".:${PYTHONPATH}"
+
+script=$( which script )
+# script="python3 logtool/pscript.py"
+
+script_file=log/pscript-output.txt
+touch_file=${script_file}
+
+#------------------------------------------------------------------------------
+
+rm -f ${script_file}
+
+( set -x ; ${script} --return --command "( set -x ; touch ${touch_file} )" ${script_file} ) 
+
+exit_code=$?
+if [ ${exit_code} -eq 0 ] ; then
+    echo "Success:  exit code is 0"
+else
+    echo "*** Error :  exit code is ${exit_code} -- EXPECTED 0"
+fi
+
+# rm -f ${script_file}
+
+#------------------------------------------------------------------------------
+
+# Expected Output :
+# + exit-code python logtool/pscript.py --return --command 'exit-code touch /root/no-such-file' log/pscript-output.txt
+# Script started, file is log/pscript-output.txt
+# touch: cannot touch '/root/no-such-file': Permission denied
+# + exit 1
+# Script done, file is log/pscript-output.txt
+# + exit 1

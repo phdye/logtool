@@ -1,0 +1,111 @@
+#
+# .custom loaded at end
+#
+# venv=... ; . ~/.venv/${venv}/bin/activate
+#
+
+# # . ~/.bash/pp.sh -- superceeded by ~/.local/bin/set-python-path and friends
+
+alias c='clear ; inv -c'
+alias b='clear ; inv -b'
+alias t='clear ; inv -t'
+alias x='clear ; inv -x'
+
+l_area=$( cd .. ; echo ${PWD##*/} )
+l_nth=${PWD##*/}
+
+alias edit-local=' _f=.local ; emacs ${_f} ; . ${_f} '
+alias editlocal=edit-local
+alias el=edit-local
+
+alias edit-build='emacs log/build/latest.txt'
+alias eb=edit-build
+
+alias edit-test='emacs log/test/latest.txt'
+alias et=edit-test
+
+alias edit-run='emacs log/run/latest.txt'
+alias er=edit-run
+
+alias snap='( inv -c ; x=${l_area}/${l_nth}/ ; cd ../.. ; tar cvfj ${x}/snapshot/$(ts).tar.xz ${x} )'
+
+alias tocyg='( set -x ; cp src/*.html /c/tmp/output/cython/. )'
+#
+
+vtrim=20
+l=12
+function inv_b_filter() {
+  # clear
+  sed -e 1,${vtrim}d log/build/latest.txt | ( echo ; head -${l} ; echo )
+}
+
+alias ibf=inv_b_filter
+
+#
+
+function inv() {
+    action="$1" ; shift
+    case "${action}" in
+        build|-b)
+	    actions=(build)
+	    ;;
+	test|-t)
+	    actions=(test)
+	    ;;
+	install|-i)
+	    actions=(install)
+	    ;;
+	clean|-c)
+	    actions=(clean)
+	    ;;
+	info)
+	    actions=(info)
+	    ;;
+	edit-log|-e|-l)
+	    actions=(edit-log)
+	    ;;
+        -x)
+            actions=( clean build test )
+            ;;
+    esac
+
+    # yellow	184 .. 187
+    # offwhite	188
+    # blue	189
+
+    unset verbose
+    for action in ${actions[@]} ; do
+
+        if [ "${action}" == "edit-log" ] ; then
+            emacs log/build/latest.txt
+        else
+            echo "[38;5;189m"
+            dot-dot-log
+	    # verbose=--verbose
+            logts ${verbose} --base log/${action} invoke ${action} "$@"
+            status=$?
+	    if [ -n "${verbose}" ] ; then
+                echo "exit status = $status"
+	    fi
+            if [ $status -ne 0 ] ; then
+                if [ "${action}" == 'build' ] ; then
+                    # inv_b_filter
+            	    # echo "- executed inv_b_filter ..."
+        	    echo
+                fi
+		# echo "exit status = $status"
+                echo "[0m"
+		return $status
+            fi
+            echo "[0m"
+            echo ""
+        fi
+    done
+    return 0
+}
+    
+#
+if [ -e .custom ] ; then
+    source .custom
+fi
+#

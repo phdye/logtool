@@ -1,0 +1,8 @@
+./log : ../log/logtool
+./s : src
+./src : logtool
+./t/common.py : ../tests/common.py
+./t/conftest.py : ../tests/conftest.py
+./t/log.py : ../tests/test_log.py
+./t/retcode.py : ../tests/test_retcode.py
+./t/ts.py : ../tests/test_logts.py

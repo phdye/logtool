@@ -1,0 +1,5 @@
+# exclude aaa log src
+# prune log
+# prune aaa
+# prune src
+# prune t

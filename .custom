@@ -1,0 +1,14 @@
+#
+
+# exit status still not carrying through - hmrpf
+
+# alias try="( clear ; echo ; logts -b log/test set-python-path --debug ..:foo eargs PYTHONPATH ; status=$? ; echo ; exit ${status} )"
+
+# alias show="( clear ; echo ; logts -b log/test pp --debug ..:foo eargs PYTHONPATH ; status=$? ; echo ; exit ${status} )"
+
+# alias x="( inv -b && inv -i && ( ( try && show ) || exit 1 ) ) ; echo $? ; echo"
+
+alias x="( inv -b && inv -i )"
+
+#
+#

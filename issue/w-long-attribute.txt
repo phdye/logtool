@@ -1,0 +1,33 @@
+
+_w_long error :
+
+    + python setup.py test
+    Traceback (most recent call last):
+      File "setup.py", line 1, in <module>
+        from setuptools import setup, find_packages
+      File "/usr/lib/python3.8/site-packages/setuptools/__init__.py", line 8, in <module>
+        import _distutils_hack.override  # noqa: F401
+      File "/usr/lib/python3.8/site-packages/_distutils_hack/__init__.py", line 4, in <module>
+        import importlib
+      File "/usr/lib/python3.7/importlib/__init__.py", line 51, in <module>
+        _w_long = _bootstrap_external._w_long
+    AttributeError: module 'importlib._bootstrap_external' has no attribute '_w_long'
+    
+    task failed - aborting
+
+  Investigate :
+
+    $ python --version
+    Python 3.8.0a3
+    
+    phdyex@xps-ne /home/phdye/src/python.common/logtool
+    $ eargs PYTHONPATH
+    /home/phdyex/.local/lib/python3.7
+    /usr/lib/python3.7
+
+  Solution :
+    Ensure that 'python' version matches lib in PYTHONPATH.
+  
+  Steps :
+    $ ln -s /usr/bin/python3.7 $HOME/.local/bin/python
+    $ hash -r

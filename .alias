@@ -1,0 +1,50 @@
+#
+
+module=$( echo $PWD | sed -e 's/^.*\///' )
+
+alias c='( clear && invoke clean )'
+
+if [ -x ~/.local/bin/logts ] ; then
+    alias b='( clear && logts -b log/build invoke build )'
+    alias t=' clear && logts -b log/test invoke test '
+    # 't' left open to allow for arguments
+    alias inst='( clear && logts -b log/install invoke install && echo "install path = $( which-module ${module} )" )'
+else
+    alias b='( clear && invoke build )'
+    alias t='( clear && invoke test )'
+    # 't' left open to allow for arguments
+    alias inst='( clear && invoke install && echo "install path = $( which-module ${module} )" )'
+fi
+
+alias re=' c && b && t '
+# 're' left open to allow for arguments to 't'
+
+alias pyhere=' PYTHONPATH=".:${PYTHONPATH}" python'
+
+alias xhere=' PYTHONPATH=".:${PYTHONPATH}" '
+
+# function pyhere() { } -- perhaps to allow alternate commands, not necessary yet.
+
+alias xt=' PYTHONPATH=".:${PYTHONPATH}" logts -b log/test pytest '
+
+#
+
+function tskip() {
+    for name in "$@" ; do
+        test=tests/test_${name}.py
+	if [ -f "${test}" ] ; then
+	    mv "${test}"{,.skip}
+	fi
+    done
+}
+
+function trestore() {
+    for name in "$@" ; do
+        test=tests/test_${name}.py
+	if [ -f "${test}".skip ] ; then
+	    mv "${test}"{.skip,}
+	fi
+    done
+}
+
+#
