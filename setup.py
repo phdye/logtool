@@ -2,12 +2,17 @@
 import sys
 from setuptools import setup, find_packages
 # from setuptools.command.develop import develop
-from setuptools.command.install import install
+from setuptools.command.install import install as InstallCommand
+from setuptools.command.test import test as TestCommand
 
 import re
 
+#------------------------------------------------------------------------------
+
 package_name = 'logtool'
+
 init = f"{package_name}/__init__.py"
+
 with open(init, 'r') as f:
     # _version = re.search('^__version__\s*=\s*"(.*)"', f.read(), re.M ).group(1)
     # contents = f.read()
@@ -28,19 +33,15 @@ with open(init, 'r') as f:
 with open("README.rst", 'rb') as f:
     _long_description = f.read().decode("utf-8")
 
-class InstallCommandWrapper(install):
+#------------------------------------------------------------------------------
+
+class InstallCommandWrapper(InstallCommand):
     """Installer command wrapper.  Allows for pre-install and post-install actions."""
 
     def run(self):
-        #
         # PUT YOUR PRE-INSTALL SCRIPT HERE or CALL A FUNCTION
-        # ...
-        #
-        install.run(self)
-        #
+        InstallCommand.run(self)
         # PUT YOUR POST-INSTALL SCRIPT HERE or CALL A FUNCTION
-        # ...
-        #
         import os
         sym_target = 'logts'
         sym_name = 'log-ts'
@@ -57,15 +58,16 @@ class InstallCommandWrapper(install):
                         "'{}' exists and is not a symlink".format(sym_link))
             os.symlink(sym_target, sym_link)
 
+#------------------------------------------------------------------------------
 
 setup(
     name = package_name,
     version=__version__,
-    # description = "logging tools -- pscript, log, logts",
     description="logging tools -- log, logts",
     author='Philip H. Dye',
     author_email='philip@phd-solutions.com',
-    packages=find_packages(exclude=[ 'tests', 't', 'src', 's', 'aaa', 'log', 'snapshot' ]),
+    # packages=find_packages(exclude=[ 'tests', 't', 'src', 's', 'aaa', 'log', 'snapshot' ]),
+    packages=['logtool'],
     url='https://github.com/philip-h-dye/logtool',
     requires=['plumbum', 'dateparser', 'docopt'],
     # setup_requires=["pytest", "pytest-runner"],
@@ -73,14 +75,15 @@ setup(
     cmdclass={
         # 'develop': PostDevelopCommand,
         'install': InstallCommandWrapper,
+        # 'test' : PyTest,
     },
     entry_points='''
         [console_scripts]
-            logts    = logtool.logts:main '''  # !/usr/bin/env python3
-    '''
-            log      = logtool.log:main '''  # !/usr/bin/env python3
-    '''
-            pscript  = logtool.pscript:main	'''  # !/usr/bin/env python3
-    '''
+            logts    = logtool.logts:main
+            log      = logtool.log:main
         ''',
 )
+
+#           pscript  = logtool.pscript:main
+
+#

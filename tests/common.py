@@ -1,8 +1,10 @@
-import sys	# only for early exit when debuging
+import sys	# actually only for early exit when debuging
+
 import os
 import tempfile
 import shutil
 import unittest
+
 import pytest
 
 from pathlib import Path
@@ -13,36 +15,11 @@ from prettyprinter import cpprint as pp
 
 #------------------------------------------------------------------------------
 
-@pytest.fixture()
-def _record(pytestconfig):
-    # return pytestconfig.getoption("record")
-    _x_record = pytestconfig.getoption("record")
-    with open('x-record', 'w') as f :
-        print(f"record = {record}")
-    return _x_record
-
-@pytest.fixture()
-def _retain(pytestconfig):
-    return pytestconfig.getoption("retain")
-
-#------------------------------------------------------------------------------
-
+@pytest.mark.usefixtures("class_setup")
 class LogTool_TestCase ( unittest.TestCase ):
 
     def setUp ( self ) :
-
-        if _retain :
-            self.tmp_dir = Path('log/retain')
-            shutil.rmtree(self.tmp_dir, ignore_errors=True)
-            self.makedirs(self.tmp_dir)
-        else :
-            self.tmp_dir_obj = tempfile.TemporaryDirectory()
-            self.tmp_dir = Path ( self.tmp_dir_obj.name )
-        self.assert_OS_Access ( self.tmp_dir, os.R_OK | os.W_OK | os.X_OK )
-        self.record = _record
-        if self.record :
-            self.recordBase = os.path.join('log', 'record')
-            self.makedirs ( self.recordBase )
+        self.logtool_init_for_session()
 
     def assert_OS_Path_Exists ( self, target ) :
         self.assertTrue ( os.path.exists ( target ),
@@ -53,10 +30,11 @@ class LogTool_TestCase ( unittest.TestCase ):
         self.assertTrue ( os.access ( target, 0 ),
                           f"Existing '{target}' is not {access} accessible.")
 
+        
     def makedirs ( self, path, mode = 0o770, exist_ok = True ):
         os.makedirs ( path, mode, exist_ok = exist_ok )
         self.assert_OS_Access ( path, os.R_OK | os.W_OK | os.X_OK )
-        
+
     #--------------------------------------------------------------------------
 
     # command			: log vs logts
@@ -64,13 +42,22 @@ class LogTool_TestCase ( unittest.TestCase ):
     # file extenstion, log only	: 'txt' vs 'raw'		-- derivable
     # output destination	: log : a file name known
     #				: ts  : a file name constructed -- derivable
-    
+
+    def X_log_common ( self, command, raw = False ) :
+        print(f"test {command} : raw = {raw}")
+        
     def log_common ( self, command, raw = False ) :
 
+        if self.retain :
+            self.tmp_dir = self.tmp_dir / command / f"raw={raw}"
+            if self.tmp_dir.exists() :
+                shutil.rmtree(self.tmp_dir)
+            self.makedirs( self.tmp_dir )
+            
         if self.record :
             extension = 'raw' if raw else 'txt'
             self.recordName = 'ts' if command == 'logts' else command
-            self.commonDir = Path(os.path.join ( self.recordBase, self.recordName, 'common' ))
+            self.commonDir = Path(os.path.join ( self.record_base, self.recordName, 'common' ))
             shutil.rmtree( self.commonDir, ignore_errors=True)
             self.makedirs( self.commonDir )
 
@@ -78,13 +65,11 @@ class LogTool_TestCase ( unittest.TestCase ):
         message = "a b c"
         if command == 'log':
             tmp_file_obj = tempfile.TemporaryFile(dir = self.tmp_dir)
-            print(f"tmp file obj    = {str(tmp_file_obj)}")
-            pp(dir(tmp_file_obj))
             out_file = tmp_file_obj.name
-            print(f"tmp file name   = {out_file}")
-            # WEIRD:  on alpine, out_file is an integer ?
-            out_file = str(tmp_file_obj)
-            print(f"tmp file name   = {out_file}")
+            # WEIRD:  on alpine, out_file is merely an integer ?
+            # probably a musl issue
+            if not isinstance(out_file, str):
+                out_file = str(tmp_file_obj)
             raw_file = out_file if raw else out_file + '.raw' 
             args = [ out_file, program, message ]
             if raw :
@@ -111,8 +96,14 @@ class LogTool_TestCase ( unittest.TestCase ):
             with listing.open('w') as f:
                 f.write(str(command)+"\n\n")
 
-        retcode = command & RETCODE
+        (retcode, stdout, stderr) = command.run(retcode=None)
 
+        if retcode != 0:
+            print(f"\n***\n*** Error Occurred\n***")
+            print(f"[stdout]\n{stdout}\n")
+            print(f"[stderr]\n{stderr}\n")
+            print(f"[error]\nexit code = {retcode}\n")
+            
         if self.record :
             with listing.open('a') as f:
                 f.write(f"+ ls {str(self.tmp_dir)}\n\n")

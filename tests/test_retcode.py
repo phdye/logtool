@@ -12,6 +12,5 @@ class Test_Plumbum_RetCode ( unittest.TestCase ) :
 
     def test_background ( self ) :
         # Returns 1, since target cannot be touched as parents do not exist
-        retcode = local['touch']['/foo/bar/baz'] & RETCODE(FG=True)
-        self.assertEqual ( retcode, 1 )
-
+        retcode = local['touch']['/foo/bar/baz'] & RETCODE(FG=False)
+        self.assertNotEqual ( retcode, 0 )

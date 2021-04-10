@@ -76,9 +76,7 @@ from time import localtime, strftime
 
 import dateparser
 
-from logtool.version import __version__
-
-from logtool import log
+from logtool import __version__, log
 
 from plumbum import local
 

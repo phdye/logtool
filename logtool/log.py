@@ -61,7 +61,7 @@ X -s, --silent   Silence STDOUT.  Output only to <log-file> (-q -n).
 # """
 
 from prettyprinter import cpprint as pp
-from logtool import version
+from logtool import __version__
 import sys
 import os
 
@@ -81,7 +81,6 @@ if not pscript:
     from plumbum.cmd import script
 
 # from logtool.fgx import FGX
-
 
 # ------------------------------------------------------------------------------
 
@@ -252,7 +251,7 @@ def configure(args):
 
 def parse_arguments(argv):
 
-    args = docopt(__doc__, argv, version=version, options_first=True)
+    args = docopt(__doc__, argv, version=__version__, options_first=True)
 
     if args['--verbose']:
         print("+ log '" + "' '".join(sys.argv) + "'")

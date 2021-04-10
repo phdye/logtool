@@ -13,6 +13,7 @@ from invoke.util import log
 def slurp(filename):
     return [(f.read(), f.close())
             for f in [open(filename)]][0][0]
+
 def newline():
     print()
 
@@ -34,7 +35,6 @@ line_color = light_yellow
 def start( color = body_color):
     newline()
     sys.stdout.write(color)
-
 
 def separator():
     newline()
@@ -73,7 +73,6 @@ EXTENSION_SOURCE_TOP_DEFAULTS = [package_name(), 'src']
 
 # ------------------------------------------------------------------------------
 
-
 @task
 def info(c):
     """
@@ -87,7 +86,6 @@ def info(c):
 
 # essentialy a forward declaration
 
-
 @task
 def clean_(c):
     clean(c)
@@ -95,7 +93,6 @@ def clean_(c):
 # ------------------------------------------------------------------------------
 
 # @task(clean_)
-
 
 @task(optional=['docs'])
 def format(c, top='src'):
@@ -159,20 +156,32 @@ def build(c, docs=False):
 # ------------------------------------------------------------------------------
 
 # @task(build)
-@task()
-def test(c, args=''):
+
+# @task()   
+# def test(c, args=''):
+
+@task(optional=['retain','record'])
+def test(c, retain=None, record=None, args=''):
     """
-    Run the test suite.                 Usage:  test [--main]
+    Usage:  test [options]
+
+      Run the test suite.                 
 
     Options :
 
-      --main    Execute <package>/__main__.py and not the test suite
+      --retain  Keep the test outputs under ./log/retain/...
+      --record  Record some stats to ./log/record/...
 
     """
 
+    args = (' --retain' if retain else '') + (' --record' if record else '')
+    
     start(test_color)
 
-    verbose_run(c, f"python setup.py test {args}")
+    if not args :
+        verbose_run(c, f"python setup.py test")
+    else :
+        verbose_run(c, "PYTHONPATH='.:${PYTHONPATH}' pytest -s tests/ "+args)
 
     separator()
 

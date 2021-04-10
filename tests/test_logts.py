@@ -13,7 +13,7 @@ from tests.common import LogTool_TestCase
 
 class Test_Case ( LogTool_TestCase ) :
 
-    def xtest_ts_text_default ( self ) :
+    def test_ts_text_default ( self ) :
         self.log_common ( 'logts', raw = False )
 
     # fails, '--raw' only applicable to 'log'
