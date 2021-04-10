@@ -89,7 +89,7 @@ class LogTool_TestCase ( unittest.TestCase ):
             with (self.commonDir / 'command' ).open('w') as f :
                 print(f"+ {command} " + " ".join(args), file=f)
 
-        command = local[f"scripts/{command}"][args]
+        command = local[f"scripts/{command}-runner"][args]
 
         if self.record :
             listing = self.commonDir / 'listing'
