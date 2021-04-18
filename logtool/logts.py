@@ -41,8 +41,7 @@ Options:
                   - Superceeded by '--quiet'
 
   -q, --quiet     Print less, keep quiet.
-                  - Superceeds '--verbose' -- turns verbose off.
-                  - Superceeded by '--debug'
+                  - Superceeds '--verbose', superceeded by '--debug'.
 
   -d, --debug     Show debugging details.
                   - Superceeds '--quiet'
@@ -59,7 +58,7 @@ Options:
 
 NOT IMPLEMENTED YET :
 
-  -s, --silent    Print nothing unless an error occurs.
+X -s, --silent    Print nothing unless an error occurs.
 
 """
 
@@ -70,19 +69,20 @@ from __future__ import print_function
 import sys
 import os
 
-from docopt import docopt
-
 from time import localtime, strftime
+from dataclasses import dataclass
 
 import dateparser
-
-from logtool import __version__, log
 
 from plumbum import local
 
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4).pprint
 pp8 = PrettyPrinter(indent=8).pprint
+
+from docopt import docopt
+
+from logtool import __version__, log
 
 # ------------------------------------------------------------------------------
 
@@ -104,7 +104,10 @@ def main(argv=sys.argv):
 
 def perform(cfg):
 
+    # print(f"{cfg}")
+
     command_line = ' '.join([cfg.command] + cfg.argv)
+
 
     # Leave 'log' to report the command
     if False : # not cfg.quiet:
@@ -224,51 +227,28 @@ def arrange_the_log_links(cfg, file_name, link_name):
 
 # ------------------------------------------------------------------------------
 
-
+@dataclass
 class ActionConfig (object):
-    __slots__ = (
-        'log_base',
-        'log_date_dir',
-        'log_dir',
-        'log_name',
-        'log_file',
-        'log_prefix',
-        'append',
-        'mode',
-        'date_string',
-        'time_string',
-        'time_stamp',
-        'command',
-        'argv',
-        'debug',
-        'quiet',
-        'verbose',
-        'show',
-        'clean',
-        'raw_name',
-        'text_name',
-    )
-
-    def __init__(self):
-        self.log_base = None
-        self.log_date_dir = None
-        self.log_dir = None
-        self.log_name = None
-        self.log_file = None
-        self.log_prefix = None
-        self.mode = None
-        self.date_string = None
-        self.time_string = None
-        self.time_stamp = None
-        self.command = None
-        self.argv = []
-        self.debug = None
-        self.quiet = None
-        self.verbose = None
-        self.show = True
-        self.clean = None
-        self.raw_name = None
-        self.text_name = None
+    log_base : str = None
+    log_date_dir : str = None
+    log_dir : str = None
+    log_name : str = None
+    log_file : str = None
+    log_prefix : str = None
+    append : bool = False
+    mode : bool = False
+    date_string : str = None
+    time_string : str = None
+    time_stamp : str = None
+    command : str = None
+    argv : str = None
+    debug : bool = False
+    quiet : bool = False
+    verbose : bool = False
+    show : bool = False
+    clean : bool = False
+    raw_name : str = None
+    text_name : str = None
 
 # ------------------------------------------------------------------------------
 
