@@ -4,13 +4,13 @@ module=$( echo $PWD | sed -e 's/^.*\///' )
 
 alias c='( clear && invoke clean )'
 
-if [ -x ~/.local/bin/logts ] ; then
+if [ ! -e .nologtool -a -x ~/.local/bin/logts ] ; then
     alias b='( clear && logts -b log/build invoke build )'
     alias t=' clear && logts -b log/test invoke test '
     # 't' left open to allow for arguments
     alias inst='( clear && logts -b log/install invoke install && echo "install path = $( which-module ${module} )" )'
 else
-    FIXED=log/fixed
+    FIXED=../log/logtool/fixed
     mkdir -p ${FIXED}
     function _fixed() {
 	    n="$1" ; shift
