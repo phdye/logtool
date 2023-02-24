@@ -1,6 +1,5 @@
 ./log : ../log/logtool
-./s : src
-./src : logtool
+./s : logtool
 ./t/common.py : ../tests/common.py
 ./t/conftest.py : ../tests/conftest.py
 ./t/log.py : ../tests/test_log.py
