@@ -15,6 +15,7 @@ else
     function _fixed() {
 	    n="$1" ; shift
 	    clear
+        echo ": PYTHONPATH = ${PYTHONPATH}"
         ( set -x ; invoke ${n} "$@" 2>&1 ) | tee ${FIXED}/$n
     }
     alias b=' _fixed build '

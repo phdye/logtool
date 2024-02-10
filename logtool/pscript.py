@@ -8,7 +8,7 @@ Usage:
 
 Options:
  -a, --append            append the output
- -c, --command <command> run command rather than interactive shell
+ -c, --command=<command> run command rather than interactive shell
  -p, --python            Use a Python shell as the terminal command
  -e, --return            return exit code of the child process
  -v, --verbose           print additional details
@@ -16,10 +16,10 @@ Options:
  -d, --debug             print debugging details -- superceeds quiet
  -V, --version           output version information and exit
  -h, --help              display this help and exit
+ -f, --flush             run flush after each write (DEFAULT)
 
 """
 
-# -f, --flush             run flush after each write
 #     --force             use output file even when it is a link
 # -t, --timing[=<file>]   output timing data to stderr (or to FILE)
 
@@ -36,7 +36,7 @@ from docopt import docopt
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
 
-from logtool import version
+from logtool import __version__
 
 from logtool.multiplex import MULTIPLEX
 
@@ -62,7 +62,7 @@ def parse_arguments(argv):
         print("raw argv:  '%s'" % ("' '".join(argv)))
         print('')
 
-    args = docopt(__doc__, argv, version=version, options_first=True)
+    args = docopt(__doc__, argv, version=__version__, options_first=True)
 
     if args['--debug']:
         print("+ log '" + "' '".join(sys.argv) + "'")
@@ -162,25 +162,21 @@ def configure(args):
 
 def perform(cfg):
 
-    # script = open ( cfg.filename, cfg.mode )
-
-    # def read(fd):
-    #     data = os.read(fd, 1024)
-    #     script.write(data)
-    #     return data
-
     if not cfg.quiet:
-        sys.stdout.write('Script started, file is %s\n' % cfg.filename)
+        sys.stdout.write(f"Script started, output log file is '{cfg.filename}'.\n")
         sys.stdout.flush()
-        # script.write(('Script started on %s\n' % time.asctime()).encode())
         with open(cfg.filename, cfg.mode) as f:
             f.write(('Script started on %s\n' % time.asctime()).encode())
 
-    # pty.spawn ( cfg.shell, read )
-
     try:
-        cfg.command[cfg.argv] & MULTIPLEX(keep=False, outputs=[cfg.filename])
+        cfg.command[cfg.argv] & MULTIPLEX(keep=False, append=True, binary=True, outputs=[cfg.filename])
+        if not cfg.quiet:
+            sys.stdout.write('Script done.\n')
+            sys.stdout.flush()
+            with open(cfg.filename, 'a') as f:
+                f.write('\nScript done.\n')
         return 0
+    
     except ProcessExecutionError as e:
         print(e.stdout)
         print(e.stderr)

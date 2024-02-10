@@ -1,6 +1,7 @@
 from select import select
 from subprocess import PIPE
 import sys
+import os
 
 from plumbum.lib import read_fd_decode_safely
 
@@ -20,13 +21,15 @@ class _MULTIPLEX(ExecutionModifier):
     Returns a tuple of (return code, stdout, stderr), just like ``run()``.
     """
 
-    __slots__ = ("retcode", "buffered", "timeout", "outputs", "keep")
+    __slots__ = ("retcode", "buffered", "timeout", "outputs", "keep", "append", "binary")
 
     def __init__(
             self,
             retcode=0,
             buffered=True,
             keep=True,
+            append=False,
+            binary=False,
             timeout=None,
             outputs=[]):
         """`retcode` is the return code to expect to mean "success".  Set
@@ -36,6 +39,8 @@ class _MULTIPLEX(ExecutionModifier):
         self.retcode = retcode
         self.buffered = buffered
         self.keep = keep
+        self.append = append
+        self.binary = binary
         self.timeout = timeout
         self.outputs = outputs
 
@@ -61,7 +66,9 @@ class _MULTIPLEX(ExecutionModifier):
             in_w = p.stdin
             out = p.stdout
             err = p.stderr
-            mout = [open(path, 'w') for path in self.outputs]
+
+            mode = ('a' if self.append else 'w') + ('b' if self.binary else '')
+            mout = [open(path, mode) for path in self.outputs]
 
             if self.keep:
                 buffers = {out: outbuf, err: errbuf}
@@ -70,6 +77,11 @@ class _MULTIPLEX(ExecutionModifier):
             while p.poll() is None:
                 ready, _, _ = select((in_r, out, err), (), ())
                 for fd in ready:
+                    # if self.binary:
+                    #     text = os.read(fd.fileno(), 4096)
+                    #     if not text:  # eof
+                    #         continue
+                    # else:
                     data, text = read_fd_decode_safely(fd, 4096)
                     if not data:  # eof
                         continue
@@ -83,6 +95,10 @@ class _MULTIPLEX(ExecutionModifier):
                             in_w.flush()
                     else:
                         tee_to[fd].write(text)
+                        if self.binary:
+                            os.linesep = '\r\n'
+                            text = text.replace("\n", "\r\n")
+                            text = text.encode(encoding='utf-8')                            
                         for fout in mout:
                             fout.write(text)
                         # And then "unbuffered" is just flushing after each

@@ -178,10 +178,14 @@ def test(c, retain=None, record=None, args=''):
     
     start(test_color)
 
+    PYTHONPATH=os.environ['PYTHONPATH']
+
+    print(f"PYTHONPATH = {PYTHONPATH}")
+
     if not args :
-        verbose_run(c, f"python setup.py test")
+        verbose_run(c, f"PYTHONPATH='.:{PYTHONPATH}' pytest -s tests/ ")
     else :
-        verbose_run(c, "PYTHONPATH='.:${PYTHONPATH}' pytest -s tests/ "+args)
+        verbose_run(c, f"PYTHONPATH='.:{PYTHONPATH}' pytest -s tests/ "+args)
 
     separator()
 
