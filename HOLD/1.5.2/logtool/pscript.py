@@ -17,11 +17,10 @@ Options:
  -h, --help              Display this help and exit
  -t, --time              Prefix each line with elapsed time
  -w, --wallclock         Prefix each line with local time of day
+ -f, --flush             run flush after each write (DEFAULT)
 """
 
-# -f, --flush             run flush after each write
 #     --force             use output file even when it is a link
-# -t, --timing[=<file>]   output timing data to stderr (or to FILE)
 
 # ------------------------------------------------------------------------------
 
@@ -36,7 +35,7 @@ from docopt import docopt
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
 
-from logtool import __version__ as version
+from logtool import __version__
 
 from logtool.multiplex import MULTIPLEX
 
@@ -67,7 +66,7 @@ def parse_arguments(argv):
         print("raw argv:  '%s'" % ("' '".join(argv)))
         print('')
 
-    args = docopt(__doc__, argv, version=version, options_first=True)
+    args = docopt(__doc__, argv, version=__version__, options_first=True)
 
     # pp(args)
     # sys.stdout.flush()
@@ -177,20 +176,14 @@ def configure(args):
 
 def perform(cfg):
 
-    # script = open ( cfg.filename, cfg.mode )
-
-    # def read(fd):
-    #     data = os.read(fd, 1024)
-    #     script.write(data)
-    #     return data
-
     if not cfg.quiet:
-        sys.stdout.write('Script started, file is %s\n' % cfg.filename)
+        sys.stdout.write(f"Script started, output log file is '{cfg.filename}'.\n")
         sys.stdout.flush()
-        # script.write(('Script started on %s\n' % time.asctime()).encode())
         with open(cfg.filename, cfg.mode) as f:
             f.write(('Script started on %s\n' % time.asctime()).encode())
 
+    retcode = 0
+    result = 'done'
     try:
         chain = cfg.command[cfg.argv]
         # Elapsed time ?
@@ -199,21 +192,22 @@ def perform(cfg):
         # Time of day ?
         if cfg.args['--wallclock']:
             chain |= ttee['-uxc']
-        chain & MULTIPLEX(append=True, keep=False, outputs=[cfg.filename])
+        outputs = [cfg.filename] if cfg.filename else []
+        chain & MULTIPLEX(append=True, binary=binary, keep=False, outputs=outputs])
     except ProcessExecutionError as e:
-        print(e.stdout)
-        print(e.stderr)
+        print(f"[stdout]\n{e.stdout}\n- - - - -")
+        print(f"[stderr]\n{e.stdout}\n- - - - -")
         sys.stdout.flush()
-        return e.retcode
+        retcode = e.retcode
+        result = 'error'
 
     if not cfg.quiet:
-        # script.write(('Script done on %s\n' % time.asctime()).encode())
         with open(cfg.filename, 'a') as f:
-            f.write(('Script done on %s\n' % time.asctime()))
-        sys.stdout.write('Script done, file is %s\n' % cfg.filename)
+            f.write((f'Script {result} on %s\n' % time.asctime()))
+        sys.stdout.write(f'Script {result}, file is %s\n' % cfg.filename)
         sys.stdout.flush()
 
-    return 0
+    return retcode
 
 
 # ------------------------------------------------------------------------------

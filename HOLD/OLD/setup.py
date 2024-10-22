@@ -69,8 +69,8 @@ setup(
     # packages=find_packages(exclude=[ 'tests', 't', 'src', 's', 'aaa', 'log', 'snapshot' ]),
     packages=['logtool'],
     url='https://github.com/philip-h-dye/logtool',
-    requires=['plumbum', 'dateparser', 'docopt'],
-    tests_require=["pytest", "pytest-runner"], # ? DEPRECATED ?
+    requires=['plumbum', 'dateparser', 'docopt', 'prettyprinter'],
+    tests_require=["pytest", "pytest-runner"],
     cmdclass={
         # 'develop': PostDevelopCommand,
         'install': InstallCommandWrapper,
@@ -82,7 +82,3 @@ setup(
             log      = logtool.log:main
         ''',
 )
-
-#           pscript  = logtool.pscript:main
-
-#

@@ -107,6 +107,8 @@ from plumbum.cmd import raw_to_text
 
 from logtool import __version__
 
+pscript = True
+# from logtool import pscript
 from . import pscript
 
 # ------------------------------------------------------------------------------
@@ -166,18 +168,29 @@ def perform(cfg):
         if cfg.verbose:
             print("+ script '{}'".format("' '".join(argv)))
         else:
-            print("+ " + command_line)
+            print("+ " + command_line + "\n")
         with open(cfg.logfile, cfg.mode) as f:
             print(f"+ {command_line}\n", file=f)
+        # argv.insert(0, '--append')
         sys.stdout.flush()
 
     # DEBUG: print ( "+ script '{}'".format ( "' '".join(argv) ))
     # DEBUG: sys.stdout.flush()
 
     try:
+        retcode = pscript.main ( ['script'] + argv )
 
-        # retcode = script[argv] & RETCODE(FG=True)
-        retcode = pscript.main ( ['script']+argv )
+        # if pscript :
+        #     if cfg.debug :
+        #         argv.insert(0, '--debug')
+        #     argv[-3] = f"{argv[-3]}={argv[-2]}"
+        #     argv[-2] = argv[-1]
+        #     del argv[-1]
+        #     argv.insert(0, 'pscript')
+        #     retcode = pscript.main ( argv )
+        # else :
+        #     retcode = script[argv] & RETCODE(FG=True)
+
         if cfg.debug:
             print('log:  retcode = {}'.format(str(retcode)))
         if not cfg.raw :
@@ -256,6 +269,7 @@ def configure(args):
 
     cfg.mode = 'a' if cfg.append else 'w' # only applies to reporting the command
 
+    # print(f": show    = '{cfg.show}'")
     # print(f": append  = '{cfg.append}'")
     # print(f": mode    = '{cfg.mode}'")
 
