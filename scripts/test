@@ -8,13 +8,11 @@ import sys
 import subprocess
 import shlex
 
-print(f"{len(sys.argv) = }")
-
 if len(sys.argv) > 1:
     args = [ shlex.quote(arg) for arg in sys.argv[1:] ]
 else:
     args = [ '--verbose' ] # show progress for each test file
 
-command = 'x/run pytest ' + ' '.join(args)
+command = 'scripts/run pytest ' + ' '.join(args)
 
 subprocess.run(['script', '-c', command, 'log/test/single.raw'])

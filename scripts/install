@@ -4,11 +4,12 @@ unset PYTHONPATH
 
 if [ "$1" == "--clean" ] ; then
     echo "- cleaning ..."
-    x/clean > /dev/null 2>&1
+    scripts/clean > /dev/null 2>&1
     shift
 else
     export PYTHONPATH=$(realpath .venv/lib/python3.9)    
 fi
 
 echo "- installing ..."
+
 pdm install "$@"

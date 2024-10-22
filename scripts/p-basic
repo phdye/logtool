@@ -1,4 +1,6 @@
-tmp=/tmp/qqq
+#!/bin/bash
+
+tmp=/tmp/p-basic.tmp
 
 cmd='echo -n "Hello " > ${tmp}'
 echo "+ ${cmd}"
@@ -6,11 +8,13 @@ eval "${cmd}"
 
 echo
 
-( set -x ; x/python -m logtool.pscript --quiet --append --command "echo World" ${tmp} )
+( set -x ; scripts/python -m logtool.pscript --quiet --append --command "echo World" ${tmp} )
 
 echo ; echo "= = = = =" ; echo
 
 ( set -x ; cat ${tmp} )
+
+rm -f ${tmp}
 
 echo
 
