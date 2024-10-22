@@ -1,0 +1,4 @@
+
+    def test_log_raw ( self ) :
+        self.log_common ( 'log', raw = True )
+

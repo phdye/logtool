@@ -70,8 +70,7 @@ setup(
     packages=['logtool'],
     url='https://github.com/philip-h-dye/logtool',
     requires=['plumbum', 'dateparser', 'docopt'],
-    # setup_requires=["pytest", "pytest-runner"],
-    # tests_require=["pytest"], # DEPRECATED
+    tests_require=["pytest", "pytest-runner"], # ? DEPRECATED ?
     cmdclass={
         # 'develop': PostDevelopCommand,
         'install': InstallCommandWrapper,

@@ -3,10 +3,15 @@
 
 import re
 import sys
+import os
 
-sys.path.insert(0, '.')
-
-from logtool.log import main
 if __name__ == '__main__':
+    
+    sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
+    # print(f"{sys.path[0] = }")
+    
+    from logtool.log import main
+
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
-    sys.exit(main())
+
+    sys.exit(main(sys.argv))

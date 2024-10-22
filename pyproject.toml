@@ -1,0 +1,37 @@
+[project]
+name = "logtool"
+version = "1.5.5"  # Ensure to update it dynamically
+description = "logging tools -- log, logts"
+authors = [
+    { name = "Philip Dye", email = "phdye@gmail.com" }
+]
+readme = "README.rst"
+requires-python = ">=3.8"
+license = { text = "License goes here" }
+homepage = "https://github.com/philip-h-dye/logtool"
+dependencies = [
+    "docopt-ng>=0.9.0",
+    "plumbum>=1.9.0",
+    "dateparser>=1.2.0",
+]
+
+[project.scripts]
+pscript = "logtool.pscript:main"
+log = "logtool.log:main"
+logts = "logtool.logts:main"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=8.3.3",
+    "prettyprinter>=0.18.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"] # if not specified on the command line

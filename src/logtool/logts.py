@@ -7,7 +7,7 @@ Usage:  logts [options] <command> [ <argv> ... ]
   Log the output of <command> to <base>/<date>/<time>.txt
   and also pipe its output to STDOUT.
 
-Options:
+Log Destination Options:
 
   -b <base>, --base <base>  MANDATORY - fatal error if not specified.
                   Place dated log directories under <base>.
@@ -35,7 +35,13 @@ Options:
                   stages of a process by an overall starting timestamp.
 
   --ref <file>    As with '--ts', but use <file>'s last modification
-                  time for timestamp and '--ref' superceeds '--ts'.
+                  time for timestamp, '--ref' superceeds '--ts'.
+
+Log Output Options:
+
+  -t, --time     Prefix each line with elapsed time.
+
+  -w, --wallclock  Prefix each line with local time of day.
 
   -v, --verbose   Print a bit more detail about the actions being taken.
                   - Superceeded by '--quiet'
@@ -51,6 +57,8 @@ Options:
 
   -a, --append    If the target log file already exists, append to it
                   -- applicable when '--ts' or '--ref' are specified.
+
+General Options:
 
   --help          Print this usage informatsion to STDERR and exit.
 
@@ -89,11 +97,12 @@ from logtool import __version__, log
 DATE_FORMAT = "%Y-%m-%d"
 TIME_FORMAT = "%H-%M-%S"
 
+TS_FORMAT = "%H:%M:%S"
+
 # ------------------------------------------------------------------------------
 
 # As setuptools' entry point passes nothing, argv must default to sys.argv main
 # to work.  Do not use sys.argv inside main since that would break unit tests.
-
 
 def main(argv=sys.argv):
 
@@ -101,13 +110,11 @@ def main(argv=sys.argv):
 
 # ------------------------------------------------------------------------------
 
-
 def perform(cfg):
 
     # print(f"{cfg}")
 
     command_line = ' '.join([cfg.command] + cfg.argv)
-
 
     # Leave 'log' to report the command
     if False : # not cfg.quiet:
@@ -132,6 +139,8 @@ def perform(cfg):
     xfg.command = cfg.command
     xfg.raw = True
     xfg.argv = cfg.argv
+    xfg.time = cfg.time
+    xfg.wallclock = cfg.wallclock
 
     try:
         retcode = log.perform(xfg)
@@ -304,6 +313,10 @@ def configure(args):
 
     cfg.log_file = os.path.join(cfg.log_dir, cfg.log_name)
 
+    cfg.time = args['--time']
+
+    cfg.wallclock = args['--wallclock']
+
     cfg.append = args['--append']
 
     cfg.mode = 'a' if cfg.append else 'w'
@@ -315,13 +328,16 @@ def configure(args):
 
 # ------------------------------------------------------------------------------
 
-
 def parse_arguments(argv):
 
     if False:  # not quiet and verbose : # '--verbose' in argv :
         print("+ [logts] '" + "' '".join(argv) + "'")
 
+    # pp(argv) ; sys.stdout.flush()
+
     args = docopt(__doc__, argv, version=__version__, options_first=True)
+
+    # pp(args) ; sys.stdout.flush()
 
     if args['--base'] is None:
         print('')
@@ -347,9 +363,9 @@ def parse_arguments(argv):
 
 
 if __name__ == '__main__':
-    # exit ( main ( sys.argv ) )
     retcode = main(sys.argv)
-    print('logts:  retcode = {}'.format(str(retcode)))
+    if '--debug' in sys.argv:
+        print('logts:  retcode = {}'.format(str(retcode)))
     exit(retcode)
 
 

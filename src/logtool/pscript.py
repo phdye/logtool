@@ -3,25 +3,25 @@
 
 """
 Usage:
- script [options] [ <file> ]
-
+  pscript [options] [<file>]
 
 Options:
- -a, --append            append the output
- -c, --command <command> run command rather than interactive shell
- -p, --python            Use a Python shell as the terminal command
- -e, --return            return exit code of the child process
- -v, --verbose           print additional details
- -q, --quiet             be quiet -- superceeds verbose
- -d, --debug             print debugging details -- superceeds quiet
- -V, --version           output version information and exit
- -h, --help              display this help and exit
-
-"""
+  -a, --append            Append the output
+  -c, --command <command> Run command rather than interactive shell
+  -p, --python            Use a Python shell as the terminal command
+  -e, --return            Return exit code of the child process
+  -v, --verbose           Print additional details
+  -q, --quiet             Be quiet -- superceeds verbose
+  -d, --debug             Print debugging details -- superceeds quiet
+  -t, --time              Prefix each line with elapsed time
+  -w, --wallclock         Prefix each line with local time of day
+  -x, --show              Show the command line to be exectuted.
+  -V, --version           Output version information and exit
+  -h, --help              Display this help and exit
+ """
 
 # -f, --flush             run flush after each write
 #     --force             use output file even when it is a link
-# -t, --timing[=<file>]   output timing data to stderr (or to FILE)
 
 # ------------------------------------------------------------------------------
 
@@ -36,11 +36,13 @@ from docopt import docopt
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
 
-from logtool import version
+from logtool import __version__ as version
 
 from logtool.multiplex import MULTIPLEX
 
 from prettyprinter import cpprint as pp
+
+ttee = local['ttee']
 
 # ------------------------------------------------------------------------------
 
@@ -57,12 +59,18 @@ def main(argv=sys.argv):
 
 def parse_arguments(argv):
 
+    # pp(argv)
+    # sys.stdout.flush()
+
     if '--debug' in argv:
         print('')
         print("raw argv:  '%s'" % ("' '".join(argv)))
         print('')
 
     args = docopt(__doc__, argv, version=version, options_first=True)
+
+    # pp(args)
+    # sys.stdout.flush()
 
     if args['--debug']:
         print("+ log '" + "' '".join(sys.argv) + "'")
@@ -80,8 +88,10 @@ def parse_arguments(argv):
 
 
 class ActionConfig (object):
-    __slots__ = ('args', 'filename', 'append', 'mode', 'command', 'argv',
-                 'return_', 'python', 'quiet', 'verbose', 'debug')
+    __slots__ = ('args', 'filename', 'append', 'mode', 
+                 'command_string', 'command', 'argv',
+                 'return_', 'python', 'show', 'quiet',
+                 'verbose', 'debug')
 
 
 def configure(args):
@@ -90,59 +100,58 @@ def configure(args):
     cfg.args = args
     cfg.command = None
     cfg.argv = []
-    cfg.filename = 'typescript'
+    cfg.filename = args['<file>']
     cfg.append = args['--append']
     cfg.return_ = args['--return']
+    cfg.show = args['--show']
     cfg.debug = args['--debug']
     cfg.quiet = args['--quiet'] if not cfg.debug else False
-
-    # cfg.verbose = ( args['--verbose'] if not cfg.quiet else False ) \
-    #               if not cfg.debug else True
-
     cfg.verbose = cfg.debug or (args['--verbose'] if not cfg.quiet else False)
-
-    if args['<file>']:
-        cfg.filename = args['<file>']
-
     cfg.mode = 'ab' if cfg.append else 'wb'
 
     # option -p: use a Python shell as the terminal command
-
     if args['--python']:
 
         cfg.command = local.get(sys.executable)
 
     elif args['--command']:
 
-        command_string = args['--command']
+        cfg.command_string = args['--command']
         lexed_command = list(
             shlex.shlex(
-                command_string,
+                cfg.command_string,
                 punctuation_chars=True))
         if cfg.debug:
             print('lexed_command:  ', end='')
             pp(lexed_command)
             sys.stdout.flush()
-        shell_command = ';' in lexed_command
-        if not shell_command:
-            command = lexed_command.pop(0)
-            try:
-                cfg.command = local.get(command)
-                cfg.argv = lexed_command
-            except BaseException:
-                shell_command = True
-        if shell_command:
-            cfg.command = local.get('bash', 'sh')
-            cfg.argv = ['-c', command_string]
+        # Always assume it is a shell command
+        # re_shellop = re.compile(r'<>;()+-*/^=!'
+        # shell_command = re_shellop.match(lexed_command) ...
+        # if not shell_command: ...
+        #     command = lexed_command.pop(0) ...
+        #     try: ...
+        #         cfg.command = local.get(command) ...
+        #         cfg.argv = lexed_command ...
+        #     except BaseException: ...
+        #         shell_command = True ...
+        # if shell_command: ...
+        cfg.command = local.get('bash', 'sh')
+        cfg.argv = ['-c', '--', cfg.command_string]
 
     if not cfg.command:
         if 'SHELL' in os.environ:
             command = os.environ['SHELL']
             try:
                 cfg.command = local.get(command)
+                cfg.argv = ['-c', '--', cfg.command_string]
             except BaseException:
-                cfg.command = local.get('bash', 'sh')
+                pass
 
+    if not cfg.command:
+        cfg.command = local.get('bash', 'sh')
+        cfg.argv = ['-c', '--', cfg.command_string]
+        
     if cfg.debug:
         print('')
         print('command:  ', end='')
@@ -162,25 +171,38 @@ def configure(args):
 
 def perform(cfg):
 
-    # script = open ( cfg.filename, cfg.mode )
-
-    # def read(fd):
-    #     data = os.read(fd, 1024)
-    #     script.write(data)
-    #     return data
+    file_info = ''
 
     if not cfg.quiet:
-        sys.stdout.write('Script started, file is %s\n' % cfg.filename)
+        if cfg.filename:
+            file_info = f", file is {cfg.filename}"
+        print(f'Script started{file_info}')
         sys.stdout.flush()
-        # script.write(('Script started on %s\n' % time.asctime()).encode())
-        with open(cfg.filename, cfg.mode) as f:
-            f.write(('Script started on %s\n' % time.asctime()).encode())
+        if cfg.filename:
+            with open(cfg.filename, cfg.mode) as f:
+                f.write(('Script started at %s\n' % time.asctime()).encode())
+            cfg.mode = 'ab'
 
-    # pty.spawn ( cfg.shell, read )
+    if cfg.show:
+        print(f'+ {cfg.command_string}')
+        sys.stdout.flush()
+        if cfg.filename:
+            with open(cfg.filename, cfg.mode) as f:
+                f.write(f'+ {cfg.command_string}\n'.encode())
+            cfg.mode = 'ab'
 
     try:
-        cfg.command[cfg.argv] & MULTIPLEX(keep=False, outputs=[cfg.filename])
-        return 0
+        chain = cfg.command[cfg.argv]
+        # Time of day ?
+        if cfg.args['--wallclock']:
+            chain |= ttee['-uxc']
+        # Elapsed time ?
+        if cfg.args['--time']:
+            chain |= ttee['-uxt']
+        append = cfg.mode != 'w'
+        outputs = [cfg.filename] if cfg.filename else []
+        chain & MULTIPLEX(append=append, outputs=outputs, keep=False)
+        # , buffered=False)
     except ProcessExecutionError as e:
         print(e.stdout)
         print(e.stderr)
@@ -188,10 +210,11 @@ def perform(cfg):
         return e.retcode
 
     if not cfg.quiet:
-        # script.write(('Script done on %s\n' % time.asctime()).encode())
-        with open(cfg.filename, 'a') as f:
-            f.write(('Script done on %s\n' % time.asctime()).encode())
-        sys.stdout.write('Script done, file is %s\n' % cfg.filename)
+        # script.write(('Script done at %s\n' % time.asctime()).encode())
+        if cfg.filename:
+            with open(cfg.filename, 'ab') as f:
+                f.write(('Script done on %s\n' % time.asctime()).encode())
+        print(f'Script done{file_info}')
         sys.stdout.flush()
 
     return 0

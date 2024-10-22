@@ -1,0 +1,7 @@
+[console_scripts]
+log = logtool.log:main
+logts = logtool.logts:main
+pscript = logtool.pscript:main
+
+[gui_scripts]
+

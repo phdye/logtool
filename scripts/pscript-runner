@@ -6,11 +6,10 @@ import sys
 import os
 
 if __name__ == '__main__':
-
     sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
-    # print(f"{sys.path[0] = }")
+    print(f"{sys.path[0] = }")
     
-    from logtool.logts import main
+    from logtool.pscript import main
 
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
 

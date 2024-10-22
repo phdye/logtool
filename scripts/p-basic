@@ -1,0 +1,16 @@
+tmp=/tmp/qqq
+
+cmd='echo -n "Hello " > ${tmp}'
+echo "+ ${cmd}"
+eval "${cmd}"
+
+echo
+
+( set -x ; x/python -m logtool.pscript --quiet --append --command "echo World" ${tmp} )
+
+echo ; echo "= = = = =" ; echo
+
+( set -x ; cat ${tmp} )
+
+echo
+

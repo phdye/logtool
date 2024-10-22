@@ -1,0 +1,4 @@
+#!/bin/bash
+
+PYTHONPATH=$(realpath .venv/lib/python3.9) pdm run "$@"
+

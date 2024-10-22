@@ -1,0 +1,10 @@
+--- /usr/local/lib/python3.9/site-packages/invoke/terminals.py~	2023-02-24 13:23:26.347743900 -0500
++++ /usr/local/lib/python3.9/site-packages/invoke/terminals.py	2023-02-24 13:25:41.037443900 -0500
+@@ -17,6 +17,7 @@
+ 
+ 
+ WINDOWS = sys.platform == "win32"
++CYGWIN = sys.platform == "cygwin"
+ """
+ Whether or not the current platform appears to be Windows in nature.
+ 

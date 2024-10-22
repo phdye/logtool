@@ -148,14 +148,13 @@ class LogTool_TestCase ( unittest.TestCase ):
         self.assertEqual( lines[-1], "")
 
         lines = lines[2:-1]
-        if False:
-            print("[body]")
-            for line in lines:
-                sys.stdout.write(line+'\n')
-            print("- - - - -")
-            del lines[1]
-            del lines[1]
-        body = '\n'.join(lines) + '\n'
+        print("[body]")
+        for line in lines:
+            sys.stdout.write(line+'\n')
+        print("- - - - -")
+        del lines[1]
+        del lines[1]
+        body = '\n'.join(lines)
 
         # print(f"[body]\n{body}\n= = = = =")
 
@@ -164,25 +163,25 @@ class LogTool_TestCase ( unittest.TestCase ):
         else :
             snippet_body = slurp(code_snippet_text)
 
-        if False:
-            lines = snippet_body.split('\n')
-            print("[snippet]")
-            for line in lines:
-                sys.stdout.write(line+'\n')
-            print("- - - - -")
-            # del lines[1]
-            # del lines[1]
-            snippet_body = '\n'.join(lines)
+        lines = snippet_body.split('\n')
+        print("[snippet]")
+        for line in lines:
+            sys.stdout.write(line+'\n')
+        print("- - - - -")
+        del lines[1]
+        del lines[1]
+        snippet_body = '\n'.join(lines)
 
         self.assertEqual ( body, snippet_body )
+
+        # self.assertEqual ( body, f"+ {program} {file_name}\n\n{snippet_body}" )
+        # self.assertEqual ( body, f"+ {program} {file_name}\n\n{snippet_body}" )
 
 #------------------------------------------------------------------------------
 
 def slurp(file, raw = False):
-    with open(file, "r") as f:
-        # , newline=('' if raw else None)) as f:
-        # , newline=('\r\n' if raw else None)) as f:
-        contents = f.read()
-    return contents
+    mode = 'rb' if raw else 'r'
+    with open(file, mode) as f:
+        return f.read()
 
 #------------------------------------------------------------------------------
