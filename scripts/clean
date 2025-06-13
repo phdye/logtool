@@ -1,1 +1,17 @@
-../.clean
+#!/bin/bash
+
+areas=$(find . */* */*/* -maxdepth 0 -type d)
+
+yes | ( set -x ; clean . ${areas} 2>&1 ) | grep -v '^Entering: '
+
+if [ "$1" != "--keep" ] ; then
+    ( set -x ; rm -rf .venv )
+fi
+
+( set -x ; rm -rf .pytest_cache )
+( set -x ; rm -rf dist )
+( set -x ; rm -rf .pdm-build )
+( set -x ; rm -rf .pdm-python )
+
+( set -x ; find . -name '*.egg-info' ) | xargs -t -n 1 rm -rf
+( set -x ; find . -name '__pycache__' ) | xargs -t -n 1 rm -rf
