@@ -7,7 +7,7 @@ import pytest
 
 from unittest.mock import MagicMock, patch, mock_open
 
-from plumbum import local
+from logtool.vendor.miniplumbum import local
 
 from logtool.multiplex import MULTIPLEX, KEYBOARD_INTERRUPT_RETCODE
 

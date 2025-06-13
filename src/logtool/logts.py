@@ -82,7 +82,8 @@ from dataclasses import dataclass
 
 import dateparser
 
-from plumbum import local
+
+from .vendor.raw_to_text import raw_to_text
 
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4).pprint
@@ -175,9 +176,8 @@ def arrange_the_log_files(cfg):
 
         raw_file = cfg.log_file
         cfg.log_file = os.path.join(cfg.log_dir, cfg.text_name)
-        rawtotext = local['raw-to-text']
-        # ((grep["world"] < sys.stdin) > "tmp.txt")()
-        ((rawtotext[""] < raw_file) > cfg.log_file)()
+        with open(raw_file, "r") as in_f, open(cfg.log_file, "w") as out_f:
+            raw_to_text(in_f, out_f)
         if not os.path.exists(cfg.log_file):
             raise ValueError("raw to text conversion failed.  Text-only log " +
                              "'%s' does not exist." % (cfg.log_file))

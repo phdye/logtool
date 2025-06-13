@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
-from plumbum import local, RETCODE
+from logtool.vendor.miniplumbum import local, RETCODE
 
 from tests.common import LogTool_TestCase
 

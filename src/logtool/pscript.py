@@ -33,8 +33,7 @@ import shlex
 
 from .vendor.docopt import docopt
 
-from plumbum import local
-from plumbum.commands.processes import ProcessExecutionError
+from .vendor.miniplumbum import local, ProcessExecutionError
 
 from logtool import __version__ as version
 
