@@ -95,7 +95,7 @@ import sys
 import os
 from dataclasses import dataclass
 
-from docopt import docopt
+from .vendor.docopt import docopt
 
 # NOTE:  CYGWIN primary broken /bin/script in a recent (late '18) release of
 #        util-linux removed it (albiet temporarily).  I had to track down an
@@ -103,7 +103,7 @@ from docopt import docopt
 
 from plumbum import RETCODE
 from plumbum.commands.processes import ProcessExecutionError
-from plumbum.cmd import raw_to_text
+from .vendor.raw_to_text import raw_to_text
 
 from logtool import __version__
 
@@ -195,14 +195,15 @@ def perform(cfg):
             print('log:  retcode = {}'.format(str(retcode)))
         if not cfg.raw :
             if cfg.verbose:
-                print('-- converting raw output to text using raw-to-text')
+                print('-- converting raw output to text using raw_to_text')
             raw_file = cfg.logfile + '.raw'
             txt_file = cfg.logfile + '.txt'
-            convert_retcode = ( ( raw_to_text['-'] < cfg.logfile ) > txt_file ) & RETCODE(FG=True)
-            if convert_retcode == 0:
+            try:
+                with open(cfg.logfile, 'r') as in_f, open(txt_file, 'w') as out_f:
+                    raw_to_text(in_f, out_f)
                 os.rename(cfg.logfile, raw_file)
                 os.rename(txt_file, cfg.logfile)
-            else :
+            except Exception:
                 print("*** raw to text conversion failed, raw logfile unchanged.")
         return retcode
 

@@ -88,7 +88,7 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4).pprint
 pp8 = PrettyPrinter(indent=8).pprint
 
-from docopt import docopt
+from .vendor.docopt import docopt
 
 from logtool import __version__, log
 
