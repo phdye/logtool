@@ -31,7 +31,7 @@ import time
 
 import shlex
 
-from docopt import docopt
+from .vendor.docopt import docopt
 
 from plumbum import local
 from plumbum.commands.processes import ProcessExecutionError
