@@ -3,9 +3,10 @@ from subprocess import PIPE
 import sys
 from dataclasses import dataclass
 
-from plumbum.lib import read_fd_decode_safely
-
-from plumbum.commands.modifiers import ExecutionModifier
+from .vendor.miniplumbum import (
+    ExecutionModifier,
+    read_fd_decode_safely,
+)
 
 KEYBOARD_INTERRUPT_RETCODE = 7
 

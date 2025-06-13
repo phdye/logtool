@@ -37,7 +37,8 @@ def raw_to_text(in_fp: TextIO, out_fp: TextIO, chunk_size: int = 8192, partial_f
     def flush_line():
         nonlocal line, line_len
         if line_len > 0:
-            out_fp_write(''.join(line[:line_len]).expandtabs() + "\n")
+            out_fp_write(''.join(line[:line_len]).expandtabs())
+        out_fp_write("\n")
         line_clear()
         line_len = 0
 
