@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from plumbum import local, RETCODE, BG
+from logtool.vendor.miniplumbum import local, RETCODE, BG
 from prettyprinter import cpprint as pp
 
 code_snippet_ansi = 'tests/code-snippet.ansi'

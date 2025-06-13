@@ -5,7 +5,7 @@ import sys
 from logtool.multiplex import MULTIPLEX
 import subprocess
 
-from plumbum import local
+from logtool.vendor.miniplumbum import local
 
 def example():
 
